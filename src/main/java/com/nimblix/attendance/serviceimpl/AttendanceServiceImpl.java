@@ -128,9 +128,10 @@ public class AttendanceServiceImpl implements AttendanceService {
 		attendance.setCheckOutLatitude(lat);
 		attendance.setCheckOutLongitude(lng);
 
-		int totalMinutes = (int) Duration
-				.between(attendance.getCheckInTime(), now)
-				.toMinutes();
+		// Cap working minutes at 9 hours (540 min) — rule #2
+		int totalMinutes = (int) Math.min(
+				Duration.between(attendance.getCheckInTime(), now).toMinutes(),
+				540);
 
 		attendance.setTotalWorkMinutes(totalMinutes);
 
@@ -194,10 +195,12 @@ public class AttendanceServiceImpl implements AttendanceService {
 
 		String url = storage.getFileUrl(photoPath);
 
-		Long empId = a.getUser() != null ? a.getUser().getId() : null;
+		String empId = a.getUser() != null
+				? String.valueOf(a.getUser().getId())
+				: null;
 		String empName = a.getUser() != null ? a.getUser().getName() : "Unknown";
 
-		return new AttendanceResponse(
+		AttendanceResponse response = new AttendanceResponse(
 				empId,
 				empName,
 				a.getDate(),
@@ -209,6 +212,8 @@ public class AttendanceServiceImpl implements AttendanceService {
 				a.getStatus(),
 				url,
 				a.getWorkMode());
+		response.setAutoCheckedOut(a.isAutoCheckedOut());
+		return response;
 	}
 
 	// ==============================

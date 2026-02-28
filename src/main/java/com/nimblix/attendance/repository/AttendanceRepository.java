@@ -2,11 +2,13 @@
 package com.nimblix.attendance.repository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -63,4 +65,18 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
     Page<Attendance> findByDateAndEarlyCheckoutTrue(LocalDate date, Pageable pageable);
 
     long countByDate(LocalDate date);
+
+    // -------------------------------------------------------
+    // Auto-checkout: bulk update records still open after 9 h
+    // -------------------------------------------------------
+    @Modifying
+    @Query("""
+            UPDATE Attendance a
+            SET    a.checkOutTime   = a.checkInTime + 9 HOUR  ,
+                   a.totalWorkMinutes = 540                    ,
+                   a.autoCheckedOut   = true
+            WHERE  a.checkOutTime IS NULL
+            AND    a.checkInTime  <= :threshold
+            """)
+    int bulkAutoCheckout(@Param("threshold") LocalDateTime threshold);
 }

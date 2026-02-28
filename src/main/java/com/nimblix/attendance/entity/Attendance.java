@@ -9,14 +9,10 @@ import org.hibernate.annotations.UpdateTimestamp;
 import jakarta.persistence.*;
 
 @Entity
-@Table(
-		name = "attendance",
-		uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "date"}),
-		indexes = {
-				@Index(name = "idx_attendance_date", columnList = "date"),
-				@Index(name = "idx_attendance_user", columnList = "user_id")
-		}
-)
+@Table(name = "attendance", uniqueConstraints = @UniqueConstraint(columnNames = { "user_id", "date" }), indexes = {
+		@Index(name = "idx_attendance_date", columnList = "date"),
+		@Index(name = "idx_attendance_user", columnList = "user_id")
+})
 public class Attendance {
 
 	@Id
@@ -55,6 +51,9 @@ public class Attendance {
 
 	private boolean late;
 	private boolean earlyCheckout;
+
+	@Column(nullable = false)
+	private boolean autoCheckedOut = false;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
@@ -188,6 +187,14 @@ public class Attendance {
 
 	public void setEarlyCheckout(boolean earlyCheckout) {
 		this.earlyCheckout = earlyCheckout;
+	}
+
+	public boolean isAutoCheckedOut() {
+		return autoCheckedOut;
+	}
+
+	public void setAutoCheckedOut(boolean autoCheckedOut) {
+		this.autoCheckedOut = autoCheckedOut;
 	}
 
 	public AttendanceStatus getStatus() {

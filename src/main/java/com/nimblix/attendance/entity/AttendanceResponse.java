@@ -26,6 +26,11 @@ public class AttendanceResponse {
 	 */
 	private boolean alreadyMarked;
 
+	/**
+	 * True when the system auto-checked-out an employee who forgot to check out.
+	 */
+	private boolean autoCheckedOut;
+
 	// Full constructor including employeeId + employeeName
 	public AttendanceResponse(String employeeId,
 			String employeeName,
@@ -158,5 +163,13 @@ public class AttendanceResponse {
 
 	public void setAlreadyMarked(boolean alreadyMarked) {
 		this.alreadyMarked = alreadyMarked;
+	}
+
+	public boolean isAutoCheckedOut() {
+		return autoCheckedOut;
+	}
+
+	public void setAutoCheckedOut(boolean autoCheckedOut) {
+		this.autoCheckedOut = autoCheckedOut;
 	}
 }
