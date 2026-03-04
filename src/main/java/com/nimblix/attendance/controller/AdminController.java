@@ -11,12 +11,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,22 +38,69 @@ public class AdminController {
 	// ===============================
 	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping(value = "/employees", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ResponseEntity<String> createEmployee(
+	public ResponseEntity<?> createEmployee(
 			@RequestPart("data") String data,
-			@RequestPart("photo") MultipartFile photo) {
+			@RequestPart(value = "photo", required = false) MultipartFile photo) {
 
 		try {
 			ObjectMapper mapper = new ObjectMapper();
 			CreateEmployeeRequest request = mapper.readValue(data, CreateEmployeeRequest.class);
 
 			userService.createEmployee(request, photo);
-			return ResponseEntity.ok("Employee created successfully");
+			return ResponseEntity.ok(java.util.Map.of("message", "Employee created successfully"));
 
 		} catch (IOException e) {
 			throw new BadRequestException("Invalid request data");
 		}
 	}
 
+	// ===============================
+	// BULK UPLOAD EMPLOYEES (POST)
+	// ===============================
+	@PreAuthorize("hasRole('ADMIN')")
+	@PostMapping(value = "/employees/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<?> uploadEmployees(
+			@RequestParam("file") MultipartFile file) {
+
+		if (file == null || file.isEmpty()) {
+			throw new BadRequestException("File is empty");
+		}
+
+		String originalFilename = file.getOriginalFilename();
+		if (originalFilename == null || !originalFilename.toLowerCase().endsWith(".xlsx")) {
+			throw new BadRequestException("Only .xlsx files are accepted");
+		}
+
+		if (file.getSize() > 10 * 1024 * 1024) { // 10 MB limit
+			throw new BadRequestException("File size exceeds the 10 MB limit");
+		}
+
+		java.util.Map<String, Object> result = userService.bulkUploadEmployees(file);
+		return ResponseEntity.ok(result);
+	}
+
+	// ===============================
+	// UPDATE EMPLOYEE (PUT)
+	// ===============================
+	@PreAuthorize("hasRole('ADMIN')")
+	@PutMapping(value = "/employees/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<?> updateEmployee(
+			@PathVariable Long id,
+			@RequestPart("data") String data,
+			@RequestPart(value = "photo", required = false) MultipartFile photo) {
+
+		try {
+			ObjectMapper mapper = new ObjectMapper();
+			com.nimblix.attendance.entity.UpdateEmployeeRequest request = mapper.readValue(data,
+					com.nimblix.attendance.entity.UpdateEmployeeRequest.class);
+
+			userService.updateEmployee(id, request, photo);
+			return ResponseEntity.ok(java.util.Map.of("message", "Employee updated successfully"));
+
+		} catch (IOException e) {
+			throw new BadRequestException("Invalid request data");
+		}
+	}
 
 	// ===============================
 	// GET ALL EMPLOYEES (GET)
@@ -68,8 +110,6 @@ public class AdminController {
 	public ResponseEntity<?> getAllEmployees() {
 		return ResponseEntity.ok(userService.getAllEmployees());
 	}
-
-
 
 	// --- All Attendance Records ---
 	@PreAuthorize("hasRole('ADMIN')")

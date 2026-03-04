@@ -20,6 +20,8 @@ public class CreateEmployeeRequest {
 	@NotBlank
 	private String password;
 
+	private Role role;
+
 	public String getEmployeeId() {
 		return employeeId;
 	}
@@ -50,6 +52,14 @@ public class CreateEmployeeRequest {
 
 	public void setPassword(String password) {
 		this.password = password;
+	}
+
+	public Role getRole() {
+		return role;
+	}
+
+	public void setRole(Role role) {
+		this.role = role;
 	}
 
 }

@@ -9,6 +9,7 @@ public class UserResponse {
 	private Role role;
 	private boolean enabled;
 	private boolean locked;
+	private String photoPath;
 
 	public Long getId() {
 		return id;
@@ -64,6 +65,14 @@ public class UserResponse {
 
 	public void setLocked(boolean locked) {
 		this.locked = locked;
+	}
+
+	public String getPhotoPath() {
+		return photoPath;
+	}
+
+	public void setPhotoPath(String photoPath) {
+		this.photoPath = photoPath;
 	}
 
 }
