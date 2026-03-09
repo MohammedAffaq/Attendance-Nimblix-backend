@@ -18,6 +18,8 @@ public class AttendanceApplication {
     }
 
     public static void main(String[] args) {
+        // Set timezone very early so JDBC and Hibernate pick it up
+        TimeZone.setDefault(TimeZone.getTimeZone("Asia/Kolkata"));
         SpringApplication.run(AttendanceApplication.class, args);
     }
 }
